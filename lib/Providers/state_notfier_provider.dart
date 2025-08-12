@@ -1,58 +1,55 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:grocery_list_app/classes/grocery_details_class.dart';
-class GroceryListNotifier extends StateNotifier<List<GroceryItem>> {
-  GroceryListNotifier() : super([]);
+import 'package:cloud_firestore/cloud_firestore.dart';
+import '../classes/grocery_details_class.dart';
 
-  void add(String name) {
-    final item = GroceryItem(
-      id: DateTime.now().millisecondsSinceEpoch.toString(),
-      name: name,
-    );
-    state = [...state, item];
-  }
+final groceryListProvider = StreamProvider<List<GroceryItem>>((ref) {
+  return FirebaseFirestore.instance
+      .collection('groceries')
+      .snapshots()
+      .map((snapshot) =>
+      snapshot.docs.map((doc) => GroceryItem.fromMap(doc.id, doc.data())).toList());
+});
 
-  void togglePurchased(String id) {
-    state = [
-      for (final item in state)
-        if (item.id == id)
-          item.copyWith(purchased: !item.purchased)
-        else
-          item
-    ];
-  }
-
-  void editItem(String id, String newName) {
-    state = [
-      for (final item in state)
-        if (item.id == id)
-          item.copyWith(name: newName)
-        else
-          item
-    ];
-  }
-
-  void delete(String id) {
-    state = state.where((item) => item.id != id).toList();
-  }
-}
-
-final groceryListProvider =
-StateNotifierProvider<GroceryListNotifier, List<GroceryItem>>(
-        (ref) => GroceryListNotifier());
-
-enum FilterType { all, purchased }
+enum FilterType { all, purchased, unpurchased }
 
 final filterProvider = StateProvider<FilterType>((ref) => FilterType.all);
 
-final filteredGroceryListProvider = Provider<List<GroceryItem>>((ref) {
+final filteredGroceryListProvider =
+Provider.family<List<GroceryItem>, List<GroceryItem>>((ref, items) {
   final filter = ref.watch(filterProvider);
-  final items = ref.watch(groceryListProvider);
-
-  return switch (filter) {
-    FilterType.purchased =>
-        items.where((item) => item.purchased).toList(),
-    FilterType.all =>
-        items.where((item) => !item.purchased).toList(),
-  };
+  switch (filter) {
+    case FilterType.purchased:
+      return items.where((item) => item.purchased).toList();
+    case FilterType.unpurchased:
+      return items.where((item) => !item.purchased).toList();
+    case FilterType.all:
+    default:
+      return items;
+  }
 });
+
+/// Firestore operations
+Future<void> addGroceryItem(String name) async {
+  await FirebaseFirestore.instance.collection('groceries').add({
+    'name': name,
+    'purchased': false,
+    'purchasedDate': null,
+  });
+}
+
+Future<void> togglePurchased(String id, bool purchased) async {
+  await FirebaseFirestore.instance.collection('groceries').doc(id).update({
+    'purchased': purchased,
+    'purchasedDate': purchased ? DateTime.now().toIso8601String() : null,
+  });
+}
+
+Future<void> deleteGroceryItem(String id) async {
+  await FirebaseFirestore.instance.collection('groceries').doc(id).delete();
+}
+
+Future<void> editGroceryItem(String id, String newName) async {
+  await FirebaseFirestore.instance.collection('groceries').doc(id).update({
+    'name': newName,
+  });
+}
