@@ -28,13 +28,14 @@ Provider<AsyncValue<List<GroceryItem>>>((ref) {
         return purchasedItems
             .where((item) =>
         item.purchasedDate != null &&
-            now.difference(item.purchasedDate!).inDays <= 7)
+            now.difference(item.purchasedDate!).inDays > 0 && // exclude today
+            now.difference(item.purchasedDate!).inDays < 7)
             .toList();
       case HistoryFilter.lastMonth:
         return purchasedItems
             .where((item) =>
         item.purchasedDate != null &&
-            now.difference(item.purchasedDate!).inDays <= 30)
+            now.difference(item.purchasedDate!).inDays >7 &&  now.difference(item.purchasedDate!).inDays <= 30)
             .toList();
       case HistoryFilter.all:
       default:
