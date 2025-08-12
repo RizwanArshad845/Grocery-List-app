@@ -25,24 +25,18 @@ class _GroceryScreenState extends ConsumerState<GroceryScreen> {
         actions: [
           IconButton(
             icon: Icon(
-              filter == FilterType.all
-                  ? Icons.filter_list_off
-                  : filter == FilterType.purchased
+              filter == FilterType.purchased
                   ? Icons.check_box
-                  : Icons.filter_list,
+                  : Icons.check_box_outline_blank,
             ),
-            tooltip: filter == FilterType.all
-                ? 'Show Purchased'
-                : filter == FilterType.purchased
+            tooltip: filter == FilterType.purchased
                 ? 'Show Unpurchased'
-                : 'Show All',
+                : 'Show Purchased',
             onPressed: () {
               ref.read(filterProvider.notifier).state =
-              filter == FilterType.all
-                  ? FilterType.purchased
-                  : filter == FilterType.purchased
+              filter == FilterType.purchased
                   ? FilterType.unpurchased
-                  : FilterType.all;
+                  : FilterType.purchased;
             },
           ),
           IconButton(
