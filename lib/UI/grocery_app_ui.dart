@@ -1,7 +1,9 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:grocery_list_app/UI/login_screen.dart';
 import 'package:grocery_list_app/UI/purchased_history_ui.dart';
 import '../Providers/state_notfier_provider.dart';
 import '../classes/grocery_details_class.dart';
@@ -121,6 +123,29 @@ class _GroceryScreenState extends ConsumerState<GroceryScreen>
                 PageRouteBuilder(
                   pageBuilder: (context, animation, secondaryAnimation) =>
                       PurchasedHistoryScreen(),
+                  transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                    return SlideTransition(
+                      position: animation.drive(
+                        Tween(begin: const Offset(1.0, 0.0), end: Offset.zero)
+                            .chain(CurveTween(curve: Curves.easeInOut)),
+                      ),
+                      child: child,
+                    );
+                  },
+                ),
+              );
+            },
+          ),
+          _buildAnimatedIconButton(
+            icon: Icons.logout_rounded,
+            tooltip: "Logout",
+            onPressed: () async {
+              await FirebaseAuth.instance.signOut();
+              Navigator.pushReplacement(
+                context,
+                PageRouteBuilder(
+                  pageBuilder: (context, animation, secondaryAnimation) =>
+                      LoginScreen(),
                   transitionsBuilder: (context, animation, secondaryAnimation, child) {
                     return SlideTransition(
                       position: animation.drive(
