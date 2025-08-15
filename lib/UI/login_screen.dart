@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:grocery_list_app/UI/grocery_app_ui.dart';
-import 'package:grocery_list_app/services/auth-services.dart';
+import 'package:grocery_list_app/services/auth_services.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
